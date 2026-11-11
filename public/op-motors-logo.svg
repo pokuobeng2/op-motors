@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none">
+  <defs>
+    <linearGradient id="opLogoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE8B3" />
+      <stop offset="40%" stop-color="#D4AF37" />
+      <stop offset="75%" stop-color="#AA8022" />
+      <stop offset="100%" stop-color="#6F5012" />
+    </linearGradient>
+    <linearGradient id="opLogoShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2129" />
+      <stop offset="60%" stop-color="#121419" />
+      <stop offset="100%" stop-color="#090A0D" />
+    </linearGradient>
+    <linearGradient id="opLogoSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BDC3CE" />
+    </linearGradient>
+  </defs>
+
+  <!-- Emblem Icon (x=0 to 64) -->
+  <g transform="translate(4, 2)">
+    <!-- Hexagonal automotive shield badge -->
+    <path d="M28 2 L49 10 C49 32 40 48 28 56 C16 48 7 32 7 10 Z" 
+          fill="url(#opLogoShield)" 
+          stroke="url(#opLogoGold)" 
+          stroke-width="2.5" 
+          stroke-linejoin="round" />
+
+    <!-- Inner precision rim -->
+    <path d="M28 6 L45 13 C45 30 37 44 28 50 C19 44 11 30 11 13 Z" 
+          fill="none" 
+          stroke="url(#opLogoGold)" 
+          stroke-width="0.8" 
+          stroke-opacity="0.45" />
+
+    <!-- The "O" in silver/chrome -->
+    <path d="M22 17 C15.5 17 10.5 21.8 10.5 28 C10.5 34.2 15.5 39 22 39 C24.8 39 27.2 38.1 29 36.5 L29 31.4 C27.2 32.8 24.8 33.7 22 33.7 C18.2 33.7 15.3 31.2 15.3 28 C15.3 24.8 18.2 22.3 22 22.3 C24.8 22.3 27.2 23.2 29 24.6 L29 19.5 C27.2 18 24.8 17 22 17 Z" 
+          fill="url(#opLogoSilver)" />
+
+    <!-- The "P" stem and aerodynamic loop in gleaming gold -->
+    <path d="M26.5 16 L35.5 16 C40.5 16 44.5 19.6 44.5 24.5 C44.5 29.4 40.5 33 35.5 33 L31.5 33 L31.5 40 L26.5 40 Z M31.5 21 L31.5 28 L35.2 28 C37.6 28 39.5 26.4 39.5 24.5 C39.5 22.6 37.6 21 35.2 21 Z" 
+          fill="url(#opLogoGold)" />
+
+    <!-- Accent pip -->
+    <circle cx="28" cy="9.5" r="1.8" fill="url(#opLogoGold)" />
+  </g>
+
+  <!-- Typography -->
+  <g transform="translate(70, 0)">
+    <!-- "OP" -->
+    <text x="0" y="38" font-family="'Sora', sans-serif" font-size="28" font-weight="800" letter-spacing="1" fill="#151618">
+      OP
+    </text>
+    
+    <!-- Vertical Gold Bar -->
+    <rect x="52" y="16" width="2" height="26" rx="1" fill="url(#opLogoGold)" />
+
+    <!-- "MOTORS" -->
+    <text x="64" y="36" font-family="'Manrope', sans-serif" font-size="16" font-weight="700" letter-spacing="5" fill="#151618">
+      MOTORS
+    </text>
+
+    <!-- Subtitle / Tagline -->
+    <text x="65" y="49" font-family="'Manrope', sans-serif" font-size="8.5" font-weight="600" letter-spacing="2" fill="#717684">
+      PREMIUM SHOWROOM
+    </text>
+  </g>
+</svg>

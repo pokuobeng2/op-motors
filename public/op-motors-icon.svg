@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="opIconGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE8B3" />
+      <stop offset="40%" stop-color="#D4AF37" />
+      <stop offset="75%" stop-color="#AA8022" />
+      <stop offset="100%" stop-color="#6F5012" />
+    </linearGradient>
+    <linearGradient id="opIconShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2129" />
+      <stop offset="60%" stop-color="#121419" />
+      <stop offset="100%" stop-color="#090A0D" />
+    </linearGradient>
+    <linearGradient id="opIconSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BDC3CE" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagonal automotive shield badge -->
+  <path d="M32 3 L55 12 C55 35 45 53 32 61 C19 53 9 35 9 12 Z" 
+        fill="url(#opIconShield)" 
+        stroke="url(#opIconGold)" 
+        stroke-width="3" 
+        stroke-linejoin="round" />
+
+  <!-- Inner precision rim -->
+  <path d="M32 7.5 L50.5 15 C50.5 33.5 42 48.5 32 55.5 C22 48.5 13.5 33.5 13.5 15 Z" 
+        fill="none" 
+        stroke="url(#opIconGold)" 
+        stroke-width="1" 
+        stroke-opacity="0.5" />
+
+  <!-- The "O" in silver/chrome -->
+  <path d="M26 19 C18.82 19 13 24.37 13 31 C13 37.63 18.82 43 26 43 C29 43 31.7 42 33.8 40.2 L33.8 34.6 C31.8 36.2 29 37.2 26 37.2 C21.8 37.2 18.5 34.4 18.5 31 C18.5 27.6 21.8 24.8 26 24.8 C29 24.8 31.8 25.8 33.8 27.4 L33.8 21.8 C31.7 20 29 19 26 19 Z" 
+        fill="url(#opIconSilver)" />
+
+  <!-- The "P" stem and aerodynamic loop in gleaming gold -->
+  <path d="M31 18 L41 18 C46.5 18 51 22 51 27.5 C51 33 46.5 37 41 37 L36.5 37 L36.5 44 L31 44 Z M36.5 23.5 L36.5 31.5 L40.5 31.5 C43.2 31.5 45.5 29.7 45.5 27.5 C45.5 25.3 43.2 23.5 40.5 23.5 Z" 
+        fill="url(#opIconGold)" />
+
+  <!-- Dynamic gold speed-pip accent -->
+  <circle cx="32" cy="11.5" r="2" fill="url(#opIconGold)" />
+</svg>

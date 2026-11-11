@@ -1,0 +1,41 @@
+# Firebase App Hosting configuration for OP Motors
+# Documentation: https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+
+env:
+  - variable: VITE_SUPABASE_URL
+    value: "https://bnfxzhzqveczmyswoawu.supabase.co"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: VITE_SUPABASE_PUBLISHABLE_KEY
+    value: "sb_publishable_nBwO9MlNLDb7r8I0bU-lXA_KB2-O8Mo"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: VITE_SUPABASE_PROJECT_ID
+    value: "bnfxzhzqveczmyswoawu"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SUPABASE_URL
+    value: "https://bnfxzhzqveczmyswoawu.supabase.co"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SUPABASE_PUBLISHABLE_KEY
+    value: "sb_publishable_nBwO9MlNLDb7r8I0bU-lXA_KB2-O8Mo"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SUPABASE_PROJECT_ID
+    value: "bnfxzhzqveczmyswoawu"
+    availability:
+      - BUILD
+      - RUNTIME
