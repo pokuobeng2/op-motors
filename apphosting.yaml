@@ -10,32 +10,32 @@ runConfig:
 
 env:
   - variable: VITE_SUPABASE_URL
-    value: "https://bnfxzhzqveczmyswoawu.supabase.co"
+    value: "https://igfgmezwlxzzhyqrljum.supabase.co"
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_SUPABASE_PUBLISHABLE_KEY
-    value: "sb_publishable_nBwO9MlNLDb7r8I0bU-lXA_KB2-O8Mo"
+    value: "sb_publishable_evAs846yXqJ3CXxtmMdDuQ_Ea_xZRjw"
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_SUPABASE_PROJECT_ID
-    value: "bnfxzhzqveczmyswoawu"
+    value: "igfgmezwlxzzhyqrljum"
     availability:
       - BUILD
       - RUNTIME
   - variable: SUPABASE_URL
-    value: "https://bnfxzhzqveczmyswoawu.supabase.co"
+    value: "https://igfgmezwlxzzhyqrljum.supabase.co"
     availability:
       - BUILD
       - RUNTIME
   - variable: SUPABASE_PUBLISHABLE_KEY
-    value: "sb_publishable_nBwO9MlNLDb7r8I0bU-lXA_KB2-O8Mo"
+    value: "sb_publishable_evAs846yXqJ3CXxtmMdDuQ_Ea_xZRjw"
     availability:
       - BUILD
       - RUNTIME
   - variable: SUPABASE_PROJECT_ID
-    value: "bnfxzhzqveczmyswoawu"
+    value: "igfgmezwlxzzhyqrljum"
     availability:
       - BUILD
       - RUNTIME
