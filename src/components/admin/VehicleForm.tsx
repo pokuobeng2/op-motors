@@ -65,7 +65,7 @@ function FieldWrapper({
 }
 
 interface VehicleFormProps {
-  vehicleId?: string;
+  vehicleId?: string | undefined;
   onNavigate: (tab: AdminTab) => void;
 }
 
@@ -112,10 +112,11 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
 
   useEffect(() => {
     if (!vehicleId) return;
+    const currentId = vehicleId;
     async function load() {
       try {
         setLoading(true);
-        const data = await getAdminVehicleById(vehicleId);
+        const data = await getAdminVehicleById(currentId);
         if (!data) {
           toast.error("Vehicle not found");
           onNavigate("vehicles");
@@ -208,6 +209,7 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
 
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i];
+        if (!file) continue;
         setUploadProgress(`Uploading ${i + 1} of ${fileArray.length}...`);
 
         const { url, path } = await uploadVehiclePhoto(file);
@@ -249,6 +251,7 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
     if (index === 0 || index >= images.length) return;
     const copy = [...images];
     const [main] = copy.splice(index, 1);
+    if (!main) return;
     copy.unshift(main);
 
     const reordered = copy.map((img, i) => ({ ...img, position: i }));
@@ -286,6 +289,7 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
     if (toIndex < 0 || toIndex >= images.length) return;
     const copy = [...images];
     const [moved] = copy.splice(fromIndex, 1);
+    if (!moved) return;
     copy.splice(toIndex, 0, moved);
 
     const reordered = copy.map((img, i) => ({ ...img, position: i }));
@@ -331,6 +335,7 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
         // If there were temporary images added before creation, attach them now
         for (let i = 0; i < images.length; i++) {
           const img = images[i];
+          if (!img) continue;
           await addVehicleImage(created.id, img.url, i, img.alt || undefined, img.storage_path || undefined);
         }
 

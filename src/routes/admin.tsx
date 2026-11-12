@@ -11,8 +11,8 @@ import { ActivityLogView } from "@/components/admin/ActivityLogView";
 import { SettingsForm } from "@/components/admin/SettingsForm";
 
 type AdminSearch = {
-  tab?: AdminTab;
-  id?: string;
+  tab?: AdminTab | undefined;
+  id?: string | undefined;
 };
 
 export const Route = createFileRoute("/admin")({

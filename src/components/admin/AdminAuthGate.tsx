@@ -1,58 +1,55 @@
-import { useState, useEffect } from "react";
-import { ShieldCheck, UserCheck, KeyRound, Loader2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Lock, Mail, Loader2, AlertCircle, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { checkOwnerExists, loginStaff, bootstrapOwner, useStaffSession, resendConfirmationEmail } from "@/lib/admin-data";
+import { loginStaff, useStaffSession, logoutStaff, resendConfirmationEmail } from "@/lib/admin-data";
 import { Logo } from "@/components/site/Logo";
 
 export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const staff = useStaffSession();
-  const [ownerExists, setOwnerExists] = useState<boolean | null>(null);
-  const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState("");
 
-  useEffect(() => {
-    checkOwnerExists().then((exists) => {
-      setOwnerExists(exists);
-      if (!exists) setIsBootstrapping(true);
-    });
-  }, []);
-
-  if (staff.isLoading || ownerExists === null) {
+  if (staff.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-gold" />
-          <p className="text-sm font-medium text-muted-foreground">Checking authentication...</p>
+          <p className="text-sm font-medium text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Already logged in
+  // Active session exists
   if (staff.user) {
     if (staff.profile && !staff.profile.is_active && !staff.isSuperAdmin) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-surface p-4">
-          <Card className="max-w-md text-center">
-            <CardHeader>
-              <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
-              <CardTitle className="mt-2 text-xl">Account Deactivated</CardTitle>
+          <Card className="w-full max-w-sm rounded-2xl border border-border text-center shadow-card">
+            <CardHeader className="space-y-2">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-xl">Account Deactivated</CardTitle>
               <CardDescription>
-                Your staff account has been deactivated by the dealership administrator.
+                Your account is inactive. Please contact the administrator.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button onClick={() => staff.refresh()} variant="outline">
-                Check again
+            <CardContent className="flex flex-col gap-2">
+              <Button onClick={() => staff.refresh()} variant="outline" size="sm">
+                Check status
+              </Button>
+              <Button onClick={() => logoutStaff()} variant="ghost" size="sm" className="text-muted-foreground">
+                Sign out
               </Button>
             </CardContent>
           </Card>
@@ -65,141 +62,151 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setResendSuccess("");
     setIsSubmitting(true);
 
     try {
-      if (isBootstrapping) {
-        await bootstrapOwner(email, password, fullName);
-      } else {
-        await loginStaff(email, password);
-      }
+      await loginStaff(email, password);
       await staff.refresh();
     } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err instanceof Error ? err.message : "Authentication failed. Please check credentials.");
+      setErrorMsg(err instanceof Error ? err.message : "Invalid email or password.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface p-4">
-      <Card className="w-full max-w-md rounded-3xl border border-border shadow-card">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-3">
-            <Logo />
-          </div>
-          <CardTitle className="font-display text-2xl">
-            {isBootstrapping ? "Dealership Owner Setup" : "Administration Portal"}
-          </CardTitle>
-          <CardDescription>
-            {isBootstrapping
-              ? "Welcome to OP Motors. Create the primary Super Administrator account to manage your dealership."
-              : "Sign in with your authorised administrator or staff credentials. New user accounts are created exclusively by the System Administrator."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {errorMsg && (
-              <div className="space-y-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <p>{errorMsg}</p>
-                </div>
-                {errorMsg.toLowerCase().includes("email not confirmed") && (
-                  <div className="pt-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={isResending}
-                      onClick={async () => {
-                        setIsResending(true);
-                        setResendSuccess("");
-                        try {
-                          await resendConfirmationEmail(email);
-                          setResendSuccess("Verification email resent! Check your inbox.");
-                        } catch (err: unknown) {
-                          setErrorMsg(err instanceof Error ? err.message : "Failed to resend confirmation email");
-                        } finally {
-                          setIsResending(false);
-                        }
-                      }}
-                      className="w-full text-xs"
-                    >
-                      {isResending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
-                      Resend Confirmation Email
-                    </Button>
-                    {resendSuccess && <p className="mt-1.5 text-xs text-primary font-medium">{resendSuccess}</p>}
-                  </div>
-                )}
-              </div>
-            )}
+    <div className="relative flex min-h-screen items-center justify-center bg-surface px-4 py-12">
+      <div className="w-full max-w-md">
+        <Card className="rounded-3xl border border-border bg-card shadow-card">
+          <CardHeader className="text-center pb-6">
+            <div className="mx-auto mb-4">
+              <Logo />
+            </div>
+            <CardTitle className="font-display text-2xl font-bold tracking-tight">
+              Admin Sign In
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground mt-1">
+              Sign in to manage your dealership
+            </CardDescription>
+          </CardHeader>
 
-            {isBootstrapping && (
-              <div className="space-y-2">
-                <Label htmlFor="fullname">Full Name</Label>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {errorMsg && (
+                <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <p className="flex-1 text-xs leading-relaxed">{errorMsg}</p>
+                  </div>
+                  {errorMsg.toLowerCase().includes("email not confirmed") && (
+                    <div className="pt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isResending}
+                        onClick={async () => {
+                          setIsResending(true);
+                          setResendSuccess("");
+                          try {
+                            await resendConfirmationEmail(email);
+                            setResendSuccess("Verification email resent. Check your inbox.");
+                          } catch (err: unknown) {
+                            setErrorMsg(err instanceof Error ? err.message : "Failed to resend confirmation email.");
+                          } finally {
+                            setIsResending(false);
+                          }
+                        }}
+                        className="w-full text-xs h-8"
+                      >
+                        {isResending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                        Resend Confirmation Email
+                      </Button>
+                      {resendSuccess && (
+                        <p className="mt-1.5 text-center text-xs text-primary font-medium">{resendSuccess}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-foreground">
+                  Email
+                </Label>
                 <div className="relative">
-                  <UserCheck className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="fullname"
-                    type="text"
+                    id="email"
+                    type="email"
+                    autoComplete="email"
                     required
-                    placeholder="e.g. Kwame Mensah"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
+                    placeholder="admin@opmotors.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-10"
                   />
                 </div>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  placeholder="admin@opmotors.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-semibold text-foreground">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 h-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <KeyRound className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  minLength={6}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+              <Button
+                type="submit"
+                variant="hero"
+                className="w-full mt-2 h-10 font-semibold"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+            </form>
 
-            <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isBootstrapping ? "Create Super Admin Account" : "Sign In to Dashboard"}
-            </Button>
-
-            <div className="mt-4 text-center">
-              <p className="text-xs text-muted-foreground">
-                Need staff access? Contact your System Administrator to create an account.
-              </p>
+            <div className="mt-6 text-center">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Return to website</span>
+              </Link>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

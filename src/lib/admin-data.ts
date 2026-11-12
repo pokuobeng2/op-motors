@@ -333,7 +333,7 @@ export async function createVehicle(payload: {
   make: string;
   model: string;
   year: number;
-  trim?: string;
+  trim?: string | undefined;
   price: number;
   mileage: number;
   engine_capacity: string;
@@ -341,15 +341,15 @@ export async function createVehicle(payload: {
   transmission: string;
   body_type: string;
   exterior_colour: string;
-  interior_colour?: string;
-  drivetrain?: string;
-  doors?: number;
+  interior_colour?: string | undefined;
+  drivetrain?: string | undefined;
+  doors?: number | undefined;
   condition: string;
-  country_of_import?: string;
+  country_of_import?: string | undefined;
   description: string;
-  features?: string[];
+  features?: string[] | undefined;
   status: VehicleStatus;
-  is_featured?: boolean;
+  is_featured?: boolean | undefined;
 }): Promise<VehicleRow> {
   // Always insert as draft first to comply with database trigger if no photo is attached yet,
   // then update if photo already added.
@@ -359,7 +359,7 @@ export async function createVehicle(payload: {
       ...payload,
       status: "draft", // initial insert safe from "Add a main photograph" trigger
       is_featured: false,
-    })
+    } as any)
     .select()
     .single();
 
@@ -374,11 +374,11 @@ export async function createVehicle(payload: {
 /** Update existing vehicle specifications */
 export async function updateVehicle(
   id: string,
-  payload: Partial<Omit<VehicleRow, "id" | "reference" | "slug" | "created_at" | "updated_at">>,
+  payload: Record<string, unknown>,
 ): Promise<VehicleRow> {
   const { data, error } = await supabase
     .from("vehicles")
-    .update(payload)
+    .update(payload as any)
     .eq("id", id)
     .select()
     .single();
@@ -420,7 +420,7 @@ export async function addVehicleImage(
       url,
       position,
       alt: alt ?? "",
-      storage_path,
+      storage_path: storage_path ?? null,
     })
     .select()
     .single();
@@ -547,6 +547,7 @@ export async function uploadMultipleVehiclePhotos(
   const results: { url: string; path: string; name: string; isCloudStorage: boolean }[] = [];
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
+    if (!file) continue;
     const uploaded = await uploadVehiclePhoto(file);
     results.push({
       ...uploaded,
@@ -571,11 +572,11 @@ export async function getAdminEnquiries(statusFilter?: EnquiryStatus | "all"): P
 export async function createEnquiry(payload: {
   customer_name: string;
   contact_number: string;
-  vehicle_id?: string;
-  vehicle_label?: string;
-  enquiry_date?: string;
-  notes?: string;
-  status?: EnquiryStatus;
+  vehicle_id?: string | undefined;
+  vehicle_label?: string | undefined;
+  enquiry_date?: string | undefined;
+  notes?: string | undefined;
+  status?: EnquiryStatus | undefined;
 }): Promise<EnquiryRow> {
   const { data, error } = await supabase
     .from("enquiries")

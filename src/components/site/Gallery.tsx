@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ChevronLeft, ChevronRight, X, Maximize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { VehicleImage } from "@/lib/public-types";
 import { SmartImage } from "./SmartImage";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const thumbsContainerRef = useRef<HTMLDivElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: count > 1,
@@ -23,13 +24,16 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
     const newIndex = emblaApi.selectedScrollSnap();
     setSelectedIndex(newIndex);
 
-    // Keep active thumbnail scrolled into view
+    // Keep active thumbnail scrolled into view inside the container WITHOUT scrolling the window
     const activeThumb = thumbRefs.current[newIndex];
     if (activeThumb && thumbsContainerRef.current) {
-      activeThumb.scrollIntoView({
+      const container = thumbsContainerRef.current;
+      const thumbLeft = activeThumb.offsetLeft;
+      const thumbWidth = activeThumb.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      container.scrollTo({
+        left: thumbLeft - containerWidth / 2 + thumbWidth / 2,
         behavior: "smooth",
-        block: "nearest",
-        inline: "center",
       });
     }
   }, [emblaApi]);
@@ -60,6 +64,23 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
     emblaApi?.scrollNext();
   }, [emblaApi]);
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerDownPos.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleSlideClick = (e: React.MouseEvent, index: number) => {
+    if (pointerDownPos.current) {
+      const dx = Math.abs(e.clientX - pointerDownPos.current.x);
+      const dy = Math.abs(e.clientY - pointerDownPos.current.y);
+      if (dx > 8 || dy > 8) {
+        // User was dragging or swiping the carousel
+        return;
+      }
+    }
+    setSelectedIndex(index);
+    setIsViewerOpen(true);
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (count < 2 || isViewerOpen) return;
@@ -78,7 +99,7 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
 
   return (
     <div>
-      {/* Main Showcase with Touch-Swipe and Click to Open Large Viewer */}
+      {/* Main Showcase with Touch-Swipe and Direct Click to Open Large Viewer */}
       <div className="group relative aspect-[3/2] overflow-hidden rounded-[2rem] bg-surface select-none shadow-sm">
         <div ref={emblaRef} className="h-full w-full overflow-hidden cursor-grab active:cursor-grabbing">
           <div className="flex h-full touch-pan-y">
@@ -86,10 +107,8 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
               <div
                 key={img.id || i}
                 className="relative h-full min-w-0 flex-[0_0_100%] cursor-zoom-in"
-                onClick={() => {
-                  if (emblaApi && !emblaApi.clickAllowed()) return;
-                  setIsViewerOpen(true);
-                }}
+                onPointerDown={handlePointerDown}
+                onClick={(e) => handleSlideClick(e, i)}
                 aria-hidden={i !== selectedIndex}
               >
                 <SmartImage
@@ -106,24 +125,13 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
           </div>
         </div>
 
-        {/* Expand full viewer button */}
-        <button
-          type="button"
-          onClick={() => setIsViewerOpen(true)}
-          aria-label="View larger photos"
-          className="glass absolute top-3 sm:top-4 right-3 sm:right-4 inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold backdrop-blur shadow-sm transition-all hover:bg-background/80 active:scale-95 z-10 cursor-pointer"
-        >
-          <Maximize2 className="h-3.5 w-3.5" />
-          <span className="hidden xs:inline">Expand</span>
-        </button>
-
         {count > 1 && (
           <>
             <button
               type="button"
               onClick={scrollPrev}
               aria-label="Previous photo"
-              className="glass absolute left-3 sm:left-4 top-1/2 inline-flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border opacity-90 sm:opacity-0 transition-all duration-300 sm:group-hover:opacity-100 hover:scale-105 active:scale-95 focus-visible:opacity-100 z-10 shadow-sm"
+              className="glass absolute left-3 sm:left-4 top-1/2 inline-flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border opacity-90 sm:opacity-0 transition-all duration-300 sm:group-hover:opacity-100 hover:scale-105 active:scale-95 focus-visible:opacity-100 z-10 shadow-sm cursor-pointer"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -131,7 +139,7 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
               type="button"
               onClick={scrollNext}
               aria-label="Next photo"
-              className="glass absolute right-3 sm:right-4 top-1/2 inline-flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border opacity-90 sm:opacity-0 transition-all duration-300 sm:group-hover:opacity-100 hover:scale-105 active:scale-95 focus-visible:opacity-100 z-10 shadow-sm"
+              className="glass absolute right-3 sm:right-4 top-1/2 inline-flex h-10 w-10 sm:h-11 sm:w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border opacity-90 sm:opacity-0 transition-all duration-300 sm:group-hover:opacity-100 hover:scale-105 active:scale-95 focus-visible:opacity-100 z-10 shadow-sm cursor-pointer"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -225,11 +233,17 @@ function ImageViewerModal({
     setModalIndex(current);
     onIndexChange(current);
 
-    thumbItemsRef.current[current]?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    const activeThumb = thumbItemsRef.current[current];
+    if (activeThumb && thumbsRef.current) {
+      const container = thumbsRef.current;
+      const thumbLeft = activeThumb.offsetLeft;
+      const thumbWidth = activeThumb.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      container.scrollTo({
+        left: thumbLeft - containerWidth / 2 + thumbWidth / 2,
+        behavior: "smooth",
+      });
+    }
   }, [emblaApi, onIndexChange]);
 
   useEffect(() => {

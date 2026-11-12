@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { ArrowLeft, Check, MessageCircle, Phone } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Gallery } from "@/components/site/Gallery";
@@ -64,6 +65,11 @@ function VehiclePage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(vehicleQuery(slug));
   const { data: settings } = useSuspenseQuery(settingsQuery);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [slug]);
+
   if (!data) return null;
   const { vehicle: v, similar } = data;
   const title = `${v.year} ${v.make} ${v.model}`;
