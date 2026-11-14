@@ -4,7 +4,7 @@ import { SiteFooter } from "./SiteFooter";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col w-full max-w-full overflow-x-hidden min-w-0">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -12,7 +12,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1">
+      <main id="main" className="flex-1 w-full min-w-0 max-w-full">
         {children}
       </main>
       <SiteFooter />

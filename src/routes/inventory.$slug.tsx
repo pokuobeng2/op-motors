@@ -101,11 +101,11 @@ function VehiclePage() {
           <ArrowLeft className="h-4 w-4" /> Back to inventory
         </Link>
       </div>
-      <div className="container-page mt-4 sm:mt-6 grid gap-6 sm:gap-8 lg:gap-10 lg:grid-cols-[1.6fr_1fr]">
-        <div className="animate-fade-up">
+      <div className="container-page mt-4 sm:mt-6 grid min-w-0 max-w-full gap-6 sm:gap-8 lg:gap-10 lg:grid-cols-[1.6fr_1fr]">
+        <div className="animate-fade-up min-w-0 max-w-full overflow-hidden">
           <Gallery images={v.images} title={title} />
         </div>
-        <aside className="animate-fade-up lg:sticky lg:top-24 lg:self-start" style={{ animationDelay: "120ms" }}>
+        <aside className="animate-fade-up min-w-0 max-w-full lg:sticky lg:top-24 lg:self-start" style={{ animationDelay: "120ms" }}>
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant={v.status === "reserved" ? "reserved" : "available"}>
               {v.status === "reserved" ? "Reserved" : "Available"}
@@ -163,8 +163,8 @@ function VehiclePage() {
         </aside>
       </div>
 
-      <div className="container-page mt-20 grid gap-14 lg:grid-cols-[1.6fr_1fr]">
-        <div className="space-y-14">
+      <div className="container-page mt-20 grid min-w-0 max-w-full gap-14 lg:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0 max-w-full space-y-14">
           <Reveal>
             <h2 className="text-2xl font-semibold md:text-3xl">Overview</h2>
             <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-muted-foreground">{v.description}</p>
@@ -182,19 +182,21 @@ function VehiclePage() {
             </Reveal>
           )}
         </div>
-        <Reveal>
-          <h2 className="text-2xl font-semibold md:text-3xl">Specifications</h2>
-          <dl className="mt-6 divide-y divide-border rounded-2xl border border-border">
-            {specs
-              .filter(([, val]) => val !== null && val !== undefined && val !== "")
-              .map(([k, val]) => (
-                <div key={k} className="flex justify-between gap-4 px-5 py-3.5 text-sm">
-                  <dt className="text-muted-foreground">{k}</dt>
-                  <dd className="text-right font-semibold">{val}</dd>
-                </div>
-              ))}
-          </dl>
-        </Reveal>
+        <div className="min-w-0 max-w-full">
+          <Reveal>
+            <h2 className="text-2xl font-semibold md:text-3xl">Specifications</h2>
+            <dl className="mt-6 divide-y divide-border rounded-2xl border border-border">
+              {specs
+                .filter(([, val]) => val !== null && val !== undefined && val !== "")
+                .map(([k, val]) => (
+                  <div key={k} className="flex justify-between gap-4 px-5 py-3.5 text-sm">
+                    <dt className="text-muted-foreground">{k}</dt>
+                    <dd className="text-right font-semibold">{val}</dd>
+                  </div>
+                ))}
+            </dl>
+          </Reveal>
+        </div>
       </div>
 
       {similar.length > 0 && (
@@ -202,7 +204,7 @@ function VehiclePage() {
           <Reveal>
             <h2 className="text-2xl font-semibold md:text-3xl">You might also like</h2>
           </Reveal>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid min-w-0 max-w-full gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {similar.map((s, i) => (
               <Reveal key={s.id} delay={i * 80}>
                 <VehicleCard vehicle={s} />

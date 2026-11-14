@@ -21,7 +21,7 @@ export function SmartImage({
   }, [src]);
 
   return (
-    <div className={cn("relative overflow-hidden bg-surface", wrapperClassName)}>
+    <div className={cn("relative overflow-hidden bg-surface max-w-full", wrapperClassName)}>
       {!loaded && <div className="skeleton-shimmer absolute inset-0" aria-hidden="true" />}
       <img
         {...props}
@@ -43,7 +43,7 @@ export function SmartImage({
           }
           onError?.(e);
         }}
-        className={cn("transition-opacity duration-700", loaded ? "opacity-100" : "opacity-0", className)}
+        className={cn("transition-opacity duration-700 max-w-full", loaded ? "opacity-100" : "opacity-0", className)}
       />
     </div>
   );

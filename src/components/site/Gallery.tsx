@@ -98,27 +98,23 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       {/* Main Showcase with Touch-Swipe and Direct Click to Open Large Viewer */}
-      <div className="group relative aspect-[3/2] overflow-hidden rounded-[2rem] bg-surface select-none shadow-sm">
-        <div ref={emblaRef} className="h-full w-full overflow-hidden cursor-grab active:cursor-grabbing">
+      <div className="group relative aspect-[3/2] w-full max-w-full overflow-hidden rounded-[2rem] bg-surface select-none shadow-sm">
+        <div ref={emblaRef} className="h-full w-full max-w-full overflow-hidden cursor-grab active:cursor-grabbing">
           <div className="flex h-full touch-pan-y">
             {images.map((img, i) => (
               <div
                 key={img.id || i}
-                className="relative h-full min-w-0 flex-[0_0_100%] cursor-zoom-in"
+                className="relative h-full min-w-0 flex-[0_0_100%] cursor-zoom-in overflow-hidden"
                 onPointerDown={handlePointerDown}
                 onClick={(e) => handleSlideClick(e, i)}
                 aria-hidden={i !== selectedIndex}
               >
-                <SmartImage
+                <GallerySlideImage
                   src={img.url}
                   alt={img.alt ?? `${title} photo ${i + 1}`}
-                  width={1600}
-                  height={1072}
-                  loading={i <= 1 ? "eager" : "lazy"}
-                  wrapperClassName="h-full w-full"
-                  className="h-full w-full object-cover transition-transform duration-500 ease-out"
+                  isPriority={i <= 1}
                 />
               </div>
             ))}
@@ -154,7 +150,7 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
       {count > 1 && (
         <div
           ref={thumbsContainerRef}
-          className="mt-3.5 flex gap-2.5 sm:gap-3 overflow-x-auto pb-1.5 scrollbar-none"
+          className="mt-3.5 flex gap-2.5 sm:gap-3 overflow-x-auto pb-1.5 scrollbar-none w-full max-w-full"
         >
           {images.map((img, i) => {
             const isActive = i === selectedIndex;
@@ -204,6 +200,52 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
           }}
         />
       )}
+    </div>
+  );
+}
+
+/** Individual slide image with intelligent aspect-ratio handling:
+ * - Keeps standard landscape vehicle photos cropped into the focal point (object-cover)
+ * - Gracefully accommodates portrait / tall images without aggressive 2.7x over-cropping or page distortion
+ */
+function GallerySlideImage({
+  src,
+  alt,
+  isPriority,
+}: {
+  src: string;
+  alt: string;
+  isPriority: boolean;
+}) {
+  const [isPortrait, setIsPortrait] = useState(false);
+
+  return (
+    <div className="relative h-full w-full max-w-full overflow-hidden bg-surface flex items-center justify-center">
+      {/* Ambient soft backdrop for portrait/tall images to maintain premium showroom aesthetic without over-cropping */}
+      {isPortrait && (
+        <img
+          src={src}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover blur-2xl scale-125 opacity-25 pointer-events-none select-none"
+        />
+      )}
+      <SmartImage
+        src={src}
+        alt={alt}
+        loading={isPriority ? "eager" : "lazy"}
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+            setIsPortrait(img.naturalHeight > img.naturalWidth * 1.05);
+          }
+        }}
+        wrapperClassName="h-full w-full max-w-full flex items-center justify-center bg-transparent"
+        className={cn(
+          "h-full w-full max-w-full transition-all duration-500 ease-out",
+          isPortrait ? "object-contain" : "object-cover object-center"
+        )}
+      />
     </div>
   );
 }
@@ -322,8 +364,8 @@ function ImageViewerModal({
           </div>
 
           {/* Main Stage (Swipable Fullscreen Carousel) */}
-          <div className="relative flex-1 flex items-center justify-center my-2 overflow-hidden">
-            <div ref={emblaRef} className="h-full w-full overflow-hidden cursor-grab active:cursor-grabbing">
+          <div className="relative flex-1 flex items-center justify-center my-2 overflow-hidden w-full max-w-full">
+            <div ref={emblaRef} className="h-full w-full max-w-full overflow-hidden cursor-grab active:cursor-grabbing">
               <div className="flex h-full touch-pan-y">
                 {images.map((img, i) => (
                   <div
