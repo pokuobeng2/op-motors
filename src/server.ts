@@ -14,6 +14,16 @@ async function getServerEntry(): Promise<ServerEntry> {
     serverEntryPromise = import("@tanstack/react-start/server-entry").then(
       (m) => (m.default ?? m) as ServerEntry,
     );
+    // Ensure storage bucket is public on server initialization
+    import("@/integrations/supabase/client.server")
+      .then(({ supabaseAdmin }) => {
+        import("./lib/storage-setup.server").then(({ ensureVehiclePhotosBucket }) => {
+          ensureVehiclePhotosBucket(supabaseAdmin).catch((e) =>
+            console.warn("[Storage] Server init bucket warning:", e),
+          );
+        });
+      })
+      .catch(() => {});
   }
   return serverEntryPromise;
 }

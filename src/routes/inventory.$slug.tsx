@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { settingsQuery, vehicleQuery } from "@/lib/queries";
 import { formatMileage, formatPrice } from "@/lib/format";
 import { enquiryMessage, telLink, whatsappLink } from "@/lib/contact";
+import { buildMetaTags } from "@/lib/seo";
 
 export const Route = createFileRoute("/inventory/$slug")({
   loader: async ({ context, params }) => {
@@ -26,20 +27,19 @@ export const Route = createFileRoute("/inventory/$slug")({
     }
     const v = loaderData.vehicle;
     const title = `${v.year} ${v.make} ${v.model}${v.trim ? ` ${v.trim}` : ""} (Stock #${v.reference}) — ${formatPrice(v.price)} | OP Motors`;
-    const description = `${v.year} ${v.make} ${v.model}, ${formatMileage(v.mileage)}, ${v.transmission}, ${v.fuel_type}. ${v.description}`.slice(0, 160);
-    const img = v.images[0]?.url;
-    const meta = [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:type", content: "product" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ];
-    if (img?.startsWith("https://")) {
-      meta.push({ property: "og:image", content: img }, { name: "twitter:image", content: img });
-    }
-    return { meta };
+    const description = `${v.year} ${v.make} ${v.model}, ${formatMileage(v.mileage)}, ${v.transmission}, ${v.fuel_type}. ${v.description || "View full vehicle specifications, photos, and book an inspection."}`.slice(0, 160);
+    const mainImage = v.images[0];
+
+    return {
+      meta: buildMetaTags({
+        title,
+        description,
+        image: mainImage?.url,
+        imageAlt: mainImage?.alt || `${v.year} ${v.make} ${v.model} at OP Motors`,
+        url: `/inventory/${v.slug}`,
+        type: "product",
+      }),
+    };
   },
   component: VehiclePage,
   notFoundComponent: () => (

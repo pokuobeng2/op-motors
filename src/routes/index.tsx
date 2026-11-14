@@ -12,24 +12,18 @@ import { homeQuery, settingsQuery } from "@/lib/queries";
 import { formatMileage, formatPrice } from "@/lib/format";
 import { generalEnquiryMessage, whatsappLink } from "@/lib/contact";
 import type { PublicVehicle } from "@/lib/public-types";
+import { buildMetaTags, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "OP Motors — Premium vehicles in Accra, Ghana" },
-      {
-        name: "description",
-        content:
-          "Explore hand-picked SUVs, sedans and pickups at OP Motors. Transparent prices, WhatsApp enquiries and easy inspection requests.",
-      },
-      { property: "og:title", content: "OP Motors — Premium vehicles in Accra, Ghana" },
-      {
-        property: "og:description",
-        content: "Hand-picked vehicles, transparent pricing, and inspections arranged on WhatsApp.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: buildMetaTags({
+      title: "OP Motors — Premium vehicles in Accra, Ghana",
+      description:
+        "Explore hand-picked SUVs, sedans and pickups at OP Motors. Transparent prices, WhatsApp enquiries and easy inspection requests.",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "OP Motors luxury automobile showroom in Accra, Ghana",
+      url: "/",
+    }),
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   component: HomePage,

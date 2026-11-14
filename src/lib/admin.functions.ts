@@ -129,3 +129,34 @@ export const createStaffUser = createServerFn({ method: "POST" })
       fullName: cleanName,
     };
   });
+
+const UploadPhotoSchema = z.object({
+  fileName: z.string().min(1),
+  base64Data: z.string().min(1),
+  contentType: z.string().default("image/jpeg"),
+});
+
+export const uploadPhotoServerFn = createServerFn({ method: "POST" })
+  .validator((d: unknown) => UploadPhotoSchema.parse(d))
+  .handler(async ({ data }) => {
+    const adminClient = getAdminClient();
+    const { ensureVehiclePhotosBucket } = await import("./storage-setup.server");
+    await ensureVehiclePhotosBucket(adminClient);
+
+    const buffer = Buffer.from(data.base64Data, "base64");
+    const { error: upErr } = await adminClient.storage.from("vehicle-photos").upload(data.fileName, buffer, {
+      contentType: data.contentType || "image/jpeg",
+      upsert: true,
+    });
+
+    if (upErr) {
+      console.error("[Storage] Server upload error:", upErr);
+      throw new Error(`Server storage upload failed: ${upErr.message}`);
+    }
+
+    const { data: pubData } = adminClient.storage.from("vehicle-photos").getPublicUrl(data.fileName);
+    return {
+      url: pubData.publicUrl,
+      path: data.fileName,
+    };
+  });

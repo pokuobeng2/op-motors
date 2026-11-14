@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { VehicleStatus, AppPermission, EnquiryStatus } from "./vehicle-options";
+import { uploadPhotoServerFn } from "./admin.functions";
 
 export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 export type VehicleRow = Database["public"]["Tables"]["vehicles"]["Row"];
@@ -450,18 +451,28 @@ export async function optimizeImage(
   maxDimension: number = 1600,
   quality: number = 0.82,
 ): Promise<{ blob: Blob; dataUrl: string }> {
-  return new Promise((resolve, reject) => {
-    // If not an image, fail gracefully
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("File is not an image"));
+  return new Promise((resolve) => {
+    // Check type or extension (handles cases where Windows reports empty file.type)
+    const isImage =
+      file.type.startsWith("image/") ||
+      /\.(jpe?g|png|webp|avif|gif|heic|bmp)$/i.test(file.name);
+
+    if (!isImage) {
+      resolve({ blob: file, dataUrl: "" });
       return;
     }
 
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => {
+      resolve({ blob: file, dataUrl: "" });
+    };
     reader.onload = (e) => {
+      const dataUrlCandidate = (e.target?.result as string) || "";
       const img = new Image();
-      img.onerror = () => reject(new Error("Failed to decode image"));
+      img.onerror = () => {
+        // Fallback gracefully (e.g. if format cannot be rendered by HTML Image)
+        resolve({ blob: file, dataUrl: dataUrlCandidate });
+      };
       img.onload = () => {
         let width = img.width;
         let height = img.height;
@@ -481,7 +492,7 @@ export async function optimizeImage(
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          reject(new Error("Canvas context not available"));
+          resolve({ blob: file, dataUrl: dataUrlCandidate });
           return;
         }
 
@@ -497,20 +508,33 @@ export async function optimizeImage(
             if (blob) {
               resolve({ blob, dataUrl });
             } else {
-              resolve({ blob: file, dataUrl });
+              resolve({ blob: file, dataUrl: dataUrlCandidate || dataUrl });
             }
           },
           "image/jpeg",
           quality,
         );
       };
-      img.src = e.target?.result as string;
+      img.src = dataUrlCandidate;
     };
     reader.readAsDataURL(file);
   });
 }
 
-/** Upload photo to vehicle-photos storage bucket or fallback to optimized data URL */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const res = (reader.result as string) || "";
+      const base64 = res.includes(",") ? res.split(",")[1] : res;
+      resolve(base64 || "");
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/** Upload photo to vehicle-photos storage bucket with server fallback */
 export async function uploadVehiclePhoto(
   file: File,
 ): Promise<{ url: string; path: string; isCloudStorage: boolean }> {
@@ -518,25 +542,51 @@ export async function uploadVehiclePhoto(
   const ext = "jpg";
   const path = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
 
+  // 1. Try uploading directly to Supabase storage bucket from browser client
   try {
-    // Try uploading to Supabase storage bucket
     const { error: uploadError } = await supabase.storage.from("vehicle-photos").upload(path, blob, {
       cacheControl: "3600",
       upsert: true,
       contentType: "image/jpeg",
     });
 
-    if (uploadError) {
-      console.warn("Storage upload failed, using optimized local data URL:", uploadError.message);
-      return { url: dataUrl, path: "", isCloudStorage: false };
+    if (!uploadError) {
+      const { data } = supabase.storage.from("vehicle-photos").getPublicUrl(path);
+      if (data?.publicUrl) {
+        return { url: data.publicUrl, path, isCloudStorage: true };
+      }
+    } else {
+      console.warn("Client storage upload failed, falling back to server upload:", uploadError.message);
     }
-
-    const { data } = supabase.storage.from("vehicle-photos").getPublicUrl(path);
-    return { url: data.publicUrl, path, isCloudStorage: true };
   } catch (err) {
-    console.warn("Storage upload exception, using fallback data URL:", err);
-    return { url: dataUrl, path: "", isCloudStorage: false };
+    console.warn("Client storage upload exception, falling back to server upload:", err);
   }
+
+  // 2. Server upload fallback (runs server-side with service_role key to bypass client RLS issues)
+  try {
+    const base64Data = dataUrl && dataUrl.includes(",")
+      ? dataUrl.split(",")[1]!
+      : await blobToBase64(blob);
+
+    if (base64Data) {
+      const result = await uploadPhotoServerFn({
+        data: {
+          fileName: path,
+          base64Data,
+          contentType: "image/jpeg",
+        },
+      });
+      if (result?.url) {
+        return { url: result.url, path: result.path || path, isCloudStorage: true };
+      }
+    }
+  } catch (serverErr) {
+    console.error("Server upload fallback failed:", serverErr);
+  }
+
+  // 3. Last-ditch local preview URL fallback
+  const fallbackUrl = dataUrl || (typeof window !== "undefined" ? URL.createObjectURL(blob) : "");
+  return { url: fallbackUrl, path: "", isCloudStorage: false };
 }
 
 /** Upload multiple photos in parallel */

@@ -3,18 +3,18 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { SiteShell, PageHeading } from "@/components/site/SiteShell";
 import { VehicleGrid } from "@/components/site/VehicleCard";
 import { recentQuery } from "@/lib/queries";
+import { buildMetaTags, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export const Route = createFileRoute("/recent")({
   loader: ({ context }) => context.queryClient.ensureQueryData(recentQuery),
   head: () => ({
-    meta: [
-      { title: "Recently added vehicles — OP Motors" },
-      { name: "description", content: "The newest arrivals at OP Motors, with the latest listings first." },
-      { property: "og:title", content: "Recently added vehicles — OP Motors" },
-      { property: "og:description", content: "The newest arrivals at OP Motors, latest first." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: buildMetaTags({
+      title: "Recently added vehicles — OP Motors",
+      description: "The newest arrivals at OP Motors, with the latest listings first.",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "Recently added vehicles at OP Motors",
+      url: "/recent",
+    }),
   }),
   component: RecentPage,
   errorComponent: ({ error }) => (

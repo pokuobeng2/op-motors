@@ -13,6 +13,7 @@ import { facetsQuery, inventoryQuery } from "@/lib/queries";
 import { SORT_OPTIONS, type SortOption } from "@/lib/vehicle-options";
 import { formatPrice } from "@/lib/format";
 import type { InventoryFilters } from "@/lib/public-data.functions";
+import { buildMetaTags, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 type InventorySearch = {
   q?: string | undefined;
@@ -57,17 +58,14 @@ export const Route = createFileRoute("/inventory/")({
       context.queryClient.ensureQueryData(facetsQuery),
     ]),
   head: () => ({
-    meta: [
-      { title: "Vehicle inventory — OP Motors" },
-      {
-        name: "description",
-        content: "Search and filter every available vehicle at OP Motors by make, model, price, year, fuel type and more.",
-      },
-      { property: "og:title", content: "Vehicle inventory — OP Motors" },
-      { property: "og:description", content: "Browse every available vehicle at OP Motors." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: buildMetaTags({
+      title: "Vehicle inventory — OP Motors",
+      description:
+        "Search and filter every available vehicle at OP Motors by make, model, price, year, fuel type and more.",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "Browse our inventory of premium vehicles at OP Motors",
+      url: "/inventory",
+    }),
   }),
   component: InventoryPage,
   errorComponent: ({ error }) => (

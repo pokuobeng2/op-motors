@@ -175,7 +175,15 @@ export function Gallery({ images, title }: { images: VehicleImage[]; title: stri
                     : "opacity-50 hover:opacity-90 hover:scale-[1.01]"
                 )}
               >
-                <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover pointer-events-none" />
+                <img
+                  src={img.url}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover pointer-events-none"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
               </button>
             );
           })}
@@ -379,7 +387,15 @@ function ImageViewerModal({
                         : "border-transparent opacity-40 hover:opacity-80"
                     )}
                   >
-                    <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover pointer-events-none" />
+                    <img
+                  src={img.url}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover pointer-events-none"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
                   </button>
                 );
               })}

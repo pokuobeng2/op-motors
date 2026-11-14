@@ -6,17 +6,17 @@ import { Reveal } from "@/components/site/Reveal";
 import { Button } from "@/components/ui/button";
 import { settingsQuery } from "@/lib/queries";
 import { generalEnquiryMessage, telLink, whatsappLink } from "@/lib/contact";
+import { buildMetaTags, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
-    meta: [
-      { title: "Contact OP Motors — WhatsApp, phone and showroom" },
-      { name: "description", content: "Call, WhatsApp or visit the OP Motors showroom in Accra. Opening hours and directions." },
-      { property: "og:title", content: "Contact OP Motors" },
-      { property: "og:description", content: "Call, WhatsApp or visit our showroom in Accra." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
+    meta: buildMetaTags({
+      title: "Contact OP Motors — WhatsApp, phone and showroom",
+      description: "Call, WhatsApp or visit the OP Motors showroom in Accra. Opening hours and directions.",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "Contact OP Motors",
+      url: "/contact",
+    }),
   }),
   component: ContactPage,
 });

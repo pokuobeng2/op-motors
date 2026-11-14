@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Upload,
   Plus,
@@ -109,6 +109,8 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const dropzoneInputRef = useRef<HTMLInputElement>(null);
+  const addMoreInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!vehicleId) return;
@@ -197,9 +199,11 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
 
   const handleFilesUpload = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return;
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    const fileArray = Array.from(files).filter(
+      (f) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|avif|gif|heic|bmp)$/i.test(f.name),
+    );
     if (fileArray.length === 0) {
-      toast.error("Please select valid image files (JPEG, PNG, WebP).");
+      toast.error("Please select valid image files (JPEG, PNG, WebP, AVIF).");
       return;
     }
 
@@ -742,6 +746,12 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
                         src={img.url}
                         alt={img.alt || `Vehicle photo ${index + 1}`}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (!target.src.includes("placeholder.svg")) {
+                            target.src = "/placeholder.svg";
+                          }
+                        }}
                       />
 
                       {/* Top Badges / Overlay */}
@@ -802,26 +812,33 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
                 })}
 
                 {/* Add More Tile in the Grid */}
-                <label className="aspect-[4/3] rounded-xl border-2 border-dashed border-border hover:border-gold/60 bg-surface/20 hover:bg-gold/5 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 sm:p-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => addMoreInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="aspect-[4/3] rounded-xl border-2 border-dashed border-border hover:border-gold/60 bg-surface/20 hover:bg-gold/5 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 sm:p-3 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mb-1" />
                   <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">Add More</span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files) handleFilesUpload(e.target.files);
-                      e.target.value = "";
-                    }}
-                    disabled={isUploadingPhoto}
-                  />
-                </label>
+                </button>
+                <input
+                  ref={addMoreInputRef}
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files) handleFilesUpload(e.target.files);
+                    e.target.value = "";
+                  }}
+                  disabled={isUploadingPhoto}
+                />
               </div>
             ) : null}
 
             {/* Upload Dropzone */}
             <div
+              onClick={() => dropzoneInputRef.current?.click()}
               onDragOver={(e) => {
                 e.preventDefault();
                 setIsDragging(true);
@@ -834,7 +851,7 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
                   handleFilesUpload(e.dataTransfer.files);
                 }
               }}
-              className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 sm:p-6 text-center transition-all ${
+              className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 sm:p-6 text-center cursor-pointer transition-all ${
                 isDragging
                   ? "border-gold bg-gold/5"
                   : "border-border bg-surface/30 hover:border-foreground/30 hover:bg-surface/50"
@@ -844,33 +861,35 @@ export function VehicleForm({ vehicleId, onNavigate }: VehicleFormProps) {
               <p className="mt-2 text-xs font-semibold">
                 {isUploadingPhoto ? uploadProgress : "Drag photos here or tap to upload"}
               </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                High-resolution JPEG, PNG, WebP or AVIF
+              </p>
               <div className="mt-3 flex items-center gap-2">
-                <label className="cursor-pointer">
-                  <Button
-                    type="button"
-                    variant="hero"
-                    size="sm"
-                    disabled={isUploadingPhoto}
-                    onClick={(e) => {
-                      const target = e.currentTarget.nextElementSibling as HTMLInputElement;
-                      target?.click();
-                    }}
-                  >
-                    {isUploadingPhoto ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    {isUploadingPhoto ? "Uploading..." : "Select Photos"}
-                  </Button>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files) handleFilesUpload(e.target.files);
-                      e.target.value = "";
-                    }}
-                    disabled={isUploadingPhoto}
-                  />
-                </label>
+                <Button
+                  type="button"
+                  variant="hero"
+                  size="sm"
+                  disabled={isUploadingPhoto}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dropzoneInputRef.current?.click();
+                  }}
+                >
+                  {isUploadingPhoto ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                  {isUploadingPhoto ? "Uploading..." : "Select Photos"}
+                </Button>
+                <input
+                  ref={dropzoneInputRef}
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files) handleFilesUpload(e.target.files);
+                    e.target.value = "";
+                  }}
+                  disabled={isUploadingPhoto}
+                />
               </div>
             </div>
 

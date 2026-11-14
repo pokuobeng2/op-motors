@@ -15,6 +15,7 @@ import { reportAppError } from "../lib/error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/queries";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -92,7 +93,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "OP Motors — Premium vehicles in Accra, Ghana" },
       { property: "og:description", content: "Browse carefully selected vehicles at OP Motors with transparent pricing." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: DEFAULT_OG_IMAGE },
+      { property: "og:image:secure_url", content: DEFAULT_OG_IMAGE },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "OP Motors — Premium vehicles in Accra, Ghana" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "OP Motors — Premium vehicles in Accra, Ghana" },
+      { name: "twitter:description", content: "Browse carefully selected vehicles at OP Motors with transparent pricing." },
+      { name: "twitter:image", content: DEFAULT_OG_IMAGE },
+      { name: "twitter:image:alt", content: "OP Motors — Premium vehicles in Accra, Ghana" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

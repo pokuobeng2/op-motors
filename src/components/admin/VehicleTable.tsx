@@ -291,6 +291,10 @@ export function VehicleTable({ onNavigate }: VehicleTableProps) {
                         alt=""
                         className="h-16 w-20 rounded-xl object-cover bg-surface shrink-0 cursor-pointer"
                         onClick={() => onNavigate("edit-vehicle", v.id)}
+                        onError={(e) => {
+                          const el = e.currentTarget;
+                          if (!el.src.includes("placeholder.svg")) el.src = "/placeholder.svg";
+                        }}
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-1.5">
@@ -382,6 +386,10 @@ export function VehicleTable({ onNavigate }: VehicleTableProps) {
                               src={mainPhoto?.url ?? "/placeholder.svg"}
                               alt=""
                               className="h-12 w-16 rounded-xl object-cover bg-surface shrink-0"
+                              onError={(e) => {
+                                const el = e.currentTarget;
+                                if (!el.src.includes("placeholder.svg")) el.src = "/placeholder.svg";
+                              }}
                             />
                             <div className="min-w-0">
                               <p className="font-semibold text-foreground hover:underline">

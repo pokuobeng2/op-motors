@@ -4,20 +4,18 @@ import { SiteShell, PageHeading } from "@/components/site/SiteShell";
 import { Reveal } from "@/components/site/Reveal";
 import { Button } from "@/components/ui/button";
 import { settingsQuery } from "@/lib/queries";
+import { buildMetaTags, DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
-    meta: [
-      { title: "About OP Motors — Trusted car dealership in Accra" },
-      {
-        name: "description",
-        content: "Learn about OP Motors: how we select, inspect and price vehicles, and the services we offer in Ghana.",
-      },
-      { property: "og:title", content: "About OP Motors" },
-      { property: "og:description", content: "How we select, inspect and price every vehicle." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: buildMetaTags({
+      title: "About OP Motors — Trusted car dealership in Accra",
+      description:
+        "Learn about OP Motors: how we select, inspect and price vehicles, and the services we offer in Ghana.",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "About OP Motors",
+      url: "/about",
+    }),
   }),
   component: AboutPage,
 });
